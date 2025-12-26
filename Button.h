@@ -10,6 +10,9 @@ class Button {
     int read();
   private:
     int pin;
+    int last_state;
+    unsigned long last_debounce_time;
+    int button_state;
 };
 
 #endif
