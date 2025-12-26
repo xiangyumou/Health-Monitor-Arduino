@@ -2,59 +2,58 @@
 
 SoundSensor::SoundSensor(uint8_t _pin, int _window_size) {
   pin = _pin;
-  window_size = _window_size;
+  if (_window_size > MAX_WINDOW_SIZE) {
+    window_size = MAX_WINDOW_SIZE;
+  } else {
+    window_size = _window_size;
+  }
 }
 
 void SoundSensor::begin() {
   bre_cnt = 0;
+  head_index = 0;
+  current_size = 0;
+  last_state = 0;
   pinMode(pin, INPUT);
+
+  // Initialize buffer
+  for (int i = 0; i < MAX_WINDOW_SIZE; i++)
+    breath_buffer[i] = 0;
 }
 
 void SoundSensor::update() {
   short t = digitalRead(pin);
-  if (breath.size() == 0) last_state = t;
-  breath.add(t);
-  if (breath.size() == window_size) {
-    int num[2] = {0, 0};
+
+  // Add to circular buffer
+  breath_buffer[head_index] = t;
+  head_index = (head_index + 1) % window_size;
+  if (current_size < window_size)
+    current_size++;
+
+  // Only calculate when we have a full window
+  if (current_size == window_size) {
+    int ones = 0;
+    int zeros = 0;
+
+    // Count ones and zeros in the current window
     for (int i = 0; i < window_size; i++) {
-      num[breath[i]]++;
+      if (breath_buffer[i] == 1)
+        ones++;
+      else
+        zeros++;
     }
-    int state = num[1] > num[0];
+
+    int state = (ones > zeros) ? 1 : 0;
     if (state != last_state) {
       last_state = state;
-      bre_cnt ++;
+      bre_cnt++;
     }
-    breath.shift();
   }
-  // timestamp.add(millis());
 }
 
-String SoundSensor::get() {
-  // int bre_cnt = 0;
-  // if (breath.size() >= window_size) {
-  //   int num[2] = {0, 0};
-  //   int n = breath.size();
-  //   for (int i = 0; i < window_size; i++) {
-  //     num[breath[i]]++;
-  //   }
-  //   int last_state = num[1] > num[0];
-  //   for (int i = 0, j = i + window_size; j < n; i++, j++) {
-  //     num[breath[i]]--;
-  //     num[breath[j]]++;
-  //     int state = num[1] > num[0];
-  //     if (state != last_state) {
-  //       last_state = state;
-  //       bre_cnt ++;
-  //     }
-  //   }
-  //   breath.clear();
-  //  timestamp.clear();
-  // }
+void SoundSensor::get_json(char *buffer, size_t size) {
+  // The original logic shifted bre_cnt by 1 (divide by 2)
   int bc = bre_cnt >> 1;
   bre_cnt = 0;
-  return "\"breathing\": " + String(bc) + ",";
-}
-
-int SoundSensor::size() {
-  return breath.size();
+  snprintf(buffer, size, "\"breathing\": %d,", bc);
 }

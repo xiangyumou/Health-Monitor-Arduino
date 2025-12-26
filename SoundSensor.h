@@ -1,23 +1,26 @@
 #ifndef SoundSensor_h
-#define SoundSendor_h
+#define SoundSensor_h
 
 #include <Arduino.h>
-#include "LinkedList.h"
+
+#define MAX_WINDOW_SIZE 64
 
 class SoundSensor {
-  public:
-    SoundSensor(uint8_t _pin, int _window_size);
-    void begin();
-    void update();
-    String get();
-    int size();
-  private:
-    LinkedList<short> breath;
-    // LinkedList<unsigned int> timestamp;
-    unsigned int window_size;
-    uint8_t pin;
-    int last_state;
-    int bre_cnt;
+public:
+  SoundSensor(uint8_t _pin, int _window_size);
+  void begin();
+  void update();
+  void get_json(char *buffer, size_t size);
+
+private:
+  uint8_t pin;
+  int window_size;
+  short breath_buffer[MAX_WINDOW_SIZE];
+  int head_index;
+  int current_size;
+
+  int last_state;
+  int bre_cnt;
 };
 
-# endif
+#endif
