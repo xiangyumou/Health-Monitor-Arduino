@@ -1,7 +1,7 @@
-#include "Button.h"
-#include "DHTSensor.h"
-#include "Light.h"
-#include "SoundSensor.h"
+#include "src/Button.h"
+#include "src/DHTSensor.h"
+#include "src/Light.h"
+#include "src/SoundSensor.h"
 
 #define DEVICE_CODE "b5ab92178e4b404b9f83a98abe2d7ce3"
 
