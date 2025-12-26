@@ -25,20 +25,15 @@ void Light::close() {
   update_state();
 }
 
-int Light::get_current_state() {
-  return cur_state;
-}
+int Light::get_current_state() { return cur_state; }
 
 void Light::opposite() {
   cur_state = cur_state ^ 1;
   update_state();
 }
 
-void Light::update_state() {
-  digitalWrite(pin, cur_state);
-}
+void Light::update_state() { digitalWrite(pin, cur_state); }
 
-String Light::get_state_json(String key) {
-  String json = "\"" + key + "\": " + String(get_current_state()) + ",";
-  return json;
+void Light::get_state_json(const char *key, char *buffer, size_t size) {
+  snprintf(buffer, size, "\"%s\": %d,", key, get_current_state());
 }
